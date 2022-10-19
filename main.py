@@ -2,34 +2,50 @@ from flask import Flask
 from flask import url_for
 from flask import request
 from flask import render_template
+import psycopg2
+import requests
+
+#1
+conn = psycopg2.connect(database="project", user = "root", password = "toor", host = "127.0.0.1", port = "5432")
+cursor = conn.cursor()
+table = '''CREATE TABLE SomeTable(
+
+   INDEX varchar(255),
+
+   ADDRESS varchar(255)
+
+)'''
+
+
+
+cursor.execute("CREATE TABLE IF NOT EXISTS nft_test (name text, count integer)")
+conn.commit
+
+#2
 app = Flask(__name__)
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        address = request.form.get('address')
+        # address = '4Jb9EzcUd6k1gC7GSH2iu6H7UcL2ez3NgvAF8n6a1QDs'
+
+        url = "https://solana-gateway.moralis.io/nft/mainnet/" + address + "/metadata"
+
+        headers = {
+
+            "accept": "application/json",
+            "X-API-Key": "LjGAwuNINRJaraC0W7OBdU4fBL9beJvwgGW7jq2FVtZtXb0G5lMl4aZ0VYnPDUif"
+
+        }
+
+        response = requests.get(url, headers=headers)
+        print(response.text)
+        # print(response.text)
+
+        return "<h1>{blablabla}</h1>".format(response.text)
+
     return render_template('index.html')
-@app.route('/login')
-def login():
-    return 'login'
-@app.route('/user/<username>')
-def profile(username):
-    return f'{username}\'s profile'
-with app.test_request_context():
-    print(url_for('index'))
-    print(url_for('login'))
-    print(url_for('login', next='/'))
-    print(url_for('profile', username='John Doe'))
 
-
-@app.route('/iam')
-def query_example():
-    # if key doesn't exist, returns None
-    language = request.args.get('language')
-    # if key doesn't exist, returns a 400, bad request error
-    framework = request.args['framework']
-    # if key doesn't exist, returns None
-    website = request.args.get('website')
-    return '''
-              <h1>The language value is: {}</h1>
-              <h1>The framework value is: {}</h1>
-              <h1>The website value is: {}'''.format(language, framework, website)
 if __name__ == '__main__':
    app.run()
+
