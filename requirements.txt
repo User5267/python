@@ -1,0 +1,1 @@
+Flask, its libraries, moralis, any nft address, database
